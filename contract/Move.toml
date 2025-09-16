@@ -4,7 +4,6 @@ version = "1.0.0"
 authors = []
 
 [addresses]
-message_board_addr = "_"
 rwa_addr = "_"
 
 [dependencies]
