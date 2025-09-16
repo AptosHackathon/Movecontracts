@@ -6,6 +6,7 @@ module rwa_addr::SpoutToken {
     use aptos_framework::fungible_asset as fa;
     use aptos_framework::object::{Self, Object};
     use aptos_framework::primary_fungible_store as pfs;
+    use crate::kyc_registry;
 
     const E_NOT_AUTHORIZED: u64 = 10;
     const E_TOKEN_ALREADY_EXISTS: u64 = 1;
@@ -74,6 +75,8 @@ module rwa_addr::SpoutToken {
         amount: u64
     ) acquires Token, Roles {
         assert_admin(admin, signer::address_of(sender));
+        // Require KYC for recipient using the same admin address as the registry owner
+        assert!(kyc_registry::is_verified(admin, recipient), error::permission_denied(E_NOT_AUTHORIZED));
         let roles = borrow_global<Roles>(admin);
         let token = borrow_global<Token>(admin);
         
@@ -103,6 +106,8 @@ module rwa_addr::SpoutToken {
         amount: u64
     ) acquires Token, Roles {
         assert_admin(admin, signer::address_of(sender));
+        // Require KYC for caller (the debited party)
+        assert!(kyc_registry::is_verified(admin, signer::address_of(sender)), error::permission_denied(E_NOT_AUTHORIZED));
         let roles = borrow_global<Roles>(admin);
         let token = borrow_global<Token>(admin);
         
