@@ -22,13 +22,19 @@ async function publish() {
   move
     .createObjectAndPublishPackage({
       packageDirectoryPath: "contract",
-      addressName: "message_board_addr",
+      addressName: "rwa_addr",
       namedAddresses: {
         // Publish module to new object, but since we create the object on the fly, we fill in the publisher's account address here
         message_board_addr: process.env.MODULE_PUBLISHER_ACCOUNT_ADDRESS,
         rwa_addr: process.env.MODULE_PUBLISHER_ACCOUNT_ADDRESS,
       },
-      extraArguments: [`--private-key=${process.env.MODULE_PUBLISHER_ACCOUNT_PRIVATE_KEY}`,`--url=${aptosSDK.NetworkToNodeAPI[process.env.APP_NETWORK]}`],
+      extraArguments: [
+        `--private-key=${process.env.MODULE_PUBLISHER_ACCOUNT_PRIVATE_KEY}`,
+        `--url=${aptosSDK.NetworkToNodeAPI[process.env.APP_NETWORK]}`,
+        "--assume-yes",
+        "--max-gas=400000",
+        "--gas-unit-price=100"
+      ],
     })
     .then((response) => {
       const filePath = ".env";
