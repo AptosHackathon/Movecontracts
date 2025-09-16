@@ -95,6 +95,9 @@ module rwa_addr::SpoutToken {
         to: address, 
         amount: u64
     ) acquires Token {
+        // Require KYC for both sender and recipient
+        assert!(kyc_registry::is_verified(admin, signer::address_of(sender)), error::permission_denied(E_NOT_AUTHORIZED));
+        assert!(kyc_registry::is_verified(admin, to), error::permission_denied(E_NOT_AUTHORIZED));
         let token = borrow_global<Token>(admin);
         pfs::transfer(sender, token.metadata, to, amount);
     }
