@@ -146,10 +146,11 @@ module rwa_addr::SpoutToken {
 
     // Returns balance in the primary fungible store for this token's metadata
     #[view]
-    public fun balance_of(publisher: address, owner: address): u64 acquires Token {
-        let token = borrow_global<Token>(publisher);
-        pfs::balance(owner, token.metadata)
-    }
+    public fun balance(owner: address): u64 acquires Token {
+       let publisher = @rwa_addr;
+       let token = borrow_global<Token>(publisher);
+       pfs::balance(owner, token.metadata)
+    }   
 
     // Returns the metadata object address for this token
     #[view]
