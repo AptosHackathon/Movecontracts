@@ -104,7 +104,7 @@ module rwa_addr::SpoutToken {
         pfs::transfer(sender, token.metadata, to, amount);
 }
 
-    /// Admin-only burn from arbitrary user via DFA dispatcher
+    /// Admin-only burn from arbitrary user
     public entry fun admin_burn_from(
         sender: &signer,
         user: address,
@@ -118,6 +118,30 @@ module rwa_addr::SpoutToken {
         // Get or create the user's primary store, then burn from it
         let user_store = pfs::ensure_primary_store_exists(user, token.metadata);
         fa::burn_from(&roles.burn_ref, user_store, amount);
+    }
+
+    /// Admin-only force transfer: burns from one user and mints to another
+    public entry fun admin_force_transfer(
+        sender: &signer,
+        from: address,
+        to: address,
+        amount: u64
+    ) acquires Token, Roles {
+        let admin = signer::address_of(sender);
+        assert_admin(admin, admin);
+        // Optional: enforce KYC on the recipient
+        // assert!(kyc_registry::is_verified(admin, to), error::permission_denied(E_NOT_AUTHORIZED));
+        let roles = borrow_global<Roles>(admin);
+        let token = borrow_global<Token>(admin);
+        
+        // Burn from source user's primary store
+        let from_store = pfs::ensure_primary_store_exists(from, token.metadata);
+        fa::burn_from(&roles.burn_ref, from_store, amount);
+        
+        // Mint to destination user's primary store
+        let to_store = pfs::ensure_primary_store_exists(to, token.metadata);
+        let minted = fa::mint(&roles.mint_ref, amount);
+        fa::deposit(to_store, minted);
     }
 
     // Returns balance in the primary fungible store for this token's metadata
