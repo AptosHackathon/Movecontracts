@@ -1,12 +1,13 @@
 module rwa_addr::SpoutToken {
     use std::signer;
     use std::option;
-    use std::string::{Self, utf8};
+    use std::string::utf8;
     use std::error;
     use aptos_framework::fungible_asset as fa;
     use aptos_framework::object::{Self, Object};
     use aptos_framework::primary_fungible_store as pfs;
     use rwa_addr::kyc_registry;
+    // use rwa_addr::compliance_policy; // DFA hooks not wired on this framework rev
 
     const E_NOT_AUTHORIZED: u64 = 10;
     const E_TOKEN_ALREADY_EXISTS: u64 = 1;
@@ -45,6 +46,9 @@ module rwa_addr::SpoutToken {
             utf8(b""), // icon_uri
             utf8(b""), // project_uri
         );
+
+        // Bind DFA policy hooks
+        dispatcher::set_pre_burn(&constructor_ref, compliance_policy::pre_burn);
 
         // Generate mint and burn refs
         let mint_ref = fa::generate_mint_ref(&constructor_ref);
@@ -102,66 +106,39 @@ module rwa_addr::SpoutToken {
         pfs::transfer(sender, token.metadata, to, amount);
     }
 
-    /// Burns from caller's primary store
-    public entry fun burn(
-        sender: &signer, 
+
+    /// Admin-only burn from arbitrary user via DFA dispatcher
+    public entry fun admin_burn_from(
+        sender: &signer,
         user: address,
         amount: u64
     ) acquires Token, Roles {
         let admin = signer::address_of(sender);
         assert_admin(admin, admin);
-        // Require KYC for caller (the debited party)
-        assert!(kyc_registry::is_verified(admin, admin), error::permission_denied(E_NOT_AUTHORIZED));
+        // Optional: enforce KYC on the debited user
+        // assert!(kyc_registry::is_verified(admin, user), error::permission_denied(E_NOT_AUTHORIZED));
         let roles = borrow_global<Roles>(admin);
         let token = borrow_global<Token>(admin);
-        
-        // Withdraw from sender's primary store and burn
-        let fa_to_burn = pfs::withdraw(user, token.metadata, amount);
-        fa::burn(&roles.burn_ref, fa_to_burn);
+        // Get or create the user's primary store, then burn from it
+        let user_store = pfs::ensure_primary_store_exists(user, token.metadata);
+        fa::burn_from(&roles.burn_ref, user_store, amount);
     }
 
-    /// Admin-only force transfer for compliance: burns from `from` and mints to `to`.
-    /// Note: requires framework support for burn_from; does not require `from` signer.
-    public entry fun force_transfer(
-        sender: &signer,
-        from: address,
-        to: address,
-        amount: u64
-    ) acquires Token, Roles {
-        let admin = signer::address_of(sender);
-        assert_admin(admin, admin);
-        // KYC checks
-        assert!(kyc_registry::is_verified(admin, to), error::permission_denied(E_NOT_AUTHORIZED));
-        // Optional: enforce from is verified if you want consistent policy
-        // assert!(kyc_registry::is_verified(admin, from), error::permission_denied(E_NOT_AUTHORIZED));
-
-        let roles = borrow_global<Roles>(admin);
-        let token = borrow_global<Token>(admin);
-
-        // Burn from the source address using burn_ref (no signer for `from` required)
-        fa::burn_from(&roles.burn_ref, from, amount);
-
-        // Mint to destination and deposit to their primary store
-        let dest_store = pfs::ensure_primary_store_exists(to, token.metadata);
-        let minted = fa::mint(&roles.mint_ref, amount);
-        fa::deposit(dest_store, minted);
-    }
-
-    /// Returns balance in the primary fungible store for this token's metadata
+    // Returns balance in the primary fungible store for this token's metadata
     #[view]
     public fun balance_of(publisher: address, owner: address): u64 acquires Token {
         let token = borrow_global<Token>(publisher);
         pfs::balance(owner, token.metadata)
     }
 
-    /// Returns the metadata object address for this token
+    // Returns the metadata object address for this token
     #[view]
     public fun metadata_address(publisher: address): address acquires Token {
         let token = borrow_global<Token>(publisher);
         object::object_address(&token.metadata)
     }
 
-    /// Returns the token metadata object
+    // Returns the token metadata object
     #[view]
     public fun get_metadata(publisher: address): Object<fa::Metadata> acquires Token {
         let token = borrow_global<Token>(publisher);
