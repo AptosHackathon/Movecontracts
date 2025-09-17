@@ -90,14 +90,14 @@ module rwa_addr::SpoutToken {
     }
 
     /// Transfers from caller's primary store to `to`
-public entry fun transfer(
-    sender: &signer,
-    to: address,
-    amount: u64
-) acquires Token, Roles {
-    let publisher = @rwa_addr;
+    public entry fun transfer(
+        sender: &signer,
+        to: address,
+        amount: u64
+    ) acquires Token, Roles {
+        let publisher = @rwa_addr;
         let roles = borrow_global<Roles>(publisher);
-    let caller = signer::address_of(sender);
+        let caller = signer::address_of(sender);
         assert!(kyc_registry::is_verified(roles.admin, caller), error::permission_denied(E_NOT_AUTHORIZED));
         assert!(kyc_registry::is_verified(roles.admin, to), error::permission_denied(E_NOT_AUTHORIZED));
         let token = borrow_global<Token>(publisher);
