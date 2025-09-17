@@ -70,11 +70,11 @@ module rwa_addr::SpoutToken {
     /// Mints to recipient's primary store
     public entry fun mint(
         sender: &signer, 
-        admin: address, 
         recipient: address, 
         amount: u64
     ) acquires Token, Roles {
-        assert_admin(admin, signer::address_of(sender));
+        let admin = signer::address_of(sender);
+        assert_admin(admin, admin);
         // Require KYC for recipient using the same admin address as the registry owner
         assert!(kyc_registry::is_verified(admin, recipient), error::permission_denied(E_NOT_AUTHORIZED));
         let roles = borrow_global<Roles>(admin);
@@ -91,10 +91,10 @@ module rwa_addr::SpoutToken {
     /// Transfers from caller's primary store to `to`
     public entry fun transfer(
         sender: &signer, 
-        admin: address, 
         to: address, 
         amount: u64
     ) acquires Token {
+        let admin = signer::address_of(sender);
         // Require KYC for both sender and recipient
         assert!(kyc_registry::is_verified(admin, signer::address_of(sender)), error::permission_denied(E_NOT_AUTHORIZED));
         assert!(kyc_registry::is_verified(admin, to), error::permission_denied(E_NOT_AUTHORIZED));
@@ -105,18 +105,45 @@ module rwa_addr::SpoutToken {
     /// Burns from caller's primary store
     public entry fun burn(
         sender: &signer, 
-        admin: address, 
         amount: u64
     ) acquires Token, Roles {
-        assert_admin(admin, signer::address_of(sender));
+        let admin = signer::address_of(sender);
+        assert_admin(admin, admin);
         // Require KYC for caller (the debited party)
-        assert!(kyc_registry::is_verified(admin, signer::address_of(sender)), error::permission_denied(E_NOT_AUTHORIZED));
+        assert!(kyc_registry::is_verified(admin, admin), error::permission_denied(E_NOT_AUTHORIZED));
         let roles = borrow_global<Roles>(admin);
         let token = borrow_global<Token>(admin);
         
         // Withdraw from sender's primary store and burn
         let fa_to_burn = pfs::withdraw(sender, token.metadata, amount);
         fa::burn(&roles.burn_ref, fa_to_burn);
+    }
+
+    /// Admin-only force transfer for compliance: burns from `from` and mints to `to`.
+    /// Note: requires framework support for burn_from; does not require `from` signer.
+    public entry fun force_transfer(
+        sender: &signer,
+        from: address,
+        to: address,
+        amount: u64
+    ) acquires Token, Roles {
+        let admin = signer::address_of(sender);
+        assert_admin(admin, admin);
+        // KYC checks
+        assert!(kyc_registry::is_verified(admin, to), error::permission_denied(E_NOT_AUTHORIZED));
+        // Optional: enforce from is verified if you want consistent policy
+        // assert!(kyc_registry::is_verified(admin, from), error::permission_denied(E_NOT_AUTHORIZED));
+
+        let roles = borrow_global<Roles>(admin);
+        let token = borrow_global<Token>(admin);
+
+        // Burn from the source address using burn_ref (no signer for `from` required)
+        fa::burn_from(&roles.burn_ref, from, amount);
+
+        // Mint to destination and deposit to their primary store
+        let dest_store = pfs::ensure_primary_store_exists(to, token.metadata);
+        let minted = fa::mint(&roles.mint_ref, amount);
+        fa::deposit(dest_store, minted);
     }
 
     /// Returns balance in the primary fungible store for this token's metadata
