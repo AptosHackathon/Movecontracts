@@ -47,9 +47,6 @@ module rwa_addr::SpoutToken {
             utf8(b""), // project_uri
         );
 
-        // Bind DFA policy hooks
-        dispatcher::set_pre_burn(&constructor_ref, compliance_policy::pre_burn);
-
         // Generate mint and burn refs
         let mint_ref = fa::generate_mint_ref(&constructor_ref);
         let burn_ref = fa::generate_burn_ref(&constructor_ref);
@@ -115,7 +112,6 @@ module rwa_addr::SpoutToken {
     ) acquires Token, Roles {
         let admin = signer::address_of(sender);
         assert_admin(admin, admin);
-        // Optional: enforce KYC on the debited user
         // assert!(kyc_registry::is_verified(admin, user), error::permission_denied(E_NOT_AUTHORIZED));
         let roles = borrow_global<Roles>(admin);
         let token = borrow_global<Token>(admin);
