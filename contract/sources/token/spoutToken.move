@@ -154,14 +154,16 @@ module rwa_addr::SpoutToken {
 
     // Returns the metadata object address for this token
     #[view]
-    public fun metadata_address(publisher: address): address acquires Token {
+    public fun metadata_address(): address acquires Token {
+        let publisher = @rwa_addr;
         let token = borrow_global<Token>(publisher);
         object::object_address(&token.metadata)
     }
 
     // Returns the token metadata object
     #[view]
-    public fun get_metadata(publisher: address): Object<fa::Metadata> acquires Token {
+    public fun get_metadata(): Object<fa::Metadata> acquires Token {
+        let publisher = @rwa_addr;
         let token = borrow_global<Token>(publisher);
         token.metadata
     }
