@@ -6,7 +6,7 @@ module rwa_addr::SpoutToken {
     use aptos_framework::fungible_asset as fa;
     use aptos_framework::object::{Self, Object};
     use aptos_framework::primary_fungible_store as pfs;
-    use crate::kyc_registry;
+    use rwa_addr::kyc_registry;
 
     const E_NOT_AUTHORIZED: u64 = 10;
     const E_TOKEN_ALREADY_EXISTS: u64 = 1;
@@ -105,6 +105,7 @@ module rwa_addr::SpoutToken {
     /// Burns from caller's primary store
     public entry fun burn(
         sender: &signer, 
+        user: address,
         amount: u64
     ) acquires Token, Roles {
         let admin = signer::address_of(sender);
@@ -115,7 +116,7 @@ module rwa_addr::SpoutToken {
         let token = borrow_global<Token>(admin);
         
         // Withdraw from sender's primary store and burn
-        let fa_to_burn = pfs::withdraw(sender, token.metadata, amount);
+        let fa_to_burn = pfs::withdraw(user, token.metadata, amount);
         fa::burn(&roles.burn_ref, fa_to_burn);
     }
 
