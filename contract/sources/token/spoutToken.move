@@ -9,8 +9,8 @@ module rwa_addr::SpoutToken {
     use rwa_addr::kyc_registry;
     use rwa_addr::compliance_policy; // DFA hooks not wired on this framework rev
 
-    const E_TOKEN_ALREADY_EXISTS: u64 = 1;
-    const E_NOT_AUTHORIZED: u64 = 2;
+    const E_TOKEN_ALREADY_EXISTS: u64 = 0;
+    const E_NOT_AUTHORIZED: u64 = 1;
 
     struct Token has key {
         metadata: Object<fa::Metadata>,

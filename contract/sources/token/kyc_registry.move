@@ -2,7 +2,7 @@ module rwa_addr::kyc_registry {
     use std::signer;
     use aptos_std::table::{Self, Table};
 
-    const E_NOT_ADMIN: u64 = 1;
+    const E_NOT_ADMIN: u64 = 0;
 
     struct Config has key {
         admin: address,
