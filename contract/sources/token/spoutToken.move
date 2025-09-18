@@ -95,6 +95,7 @@ module rwa_addr::SpoutToken {
         to: address,
         amount: u64
     ) acquires Token, Roles {
+        // @rwa_addr is the publisher address
         let publisher = @rwa_addr;
         let roles = borrow_global<Roles>(publisher);
         let caller = signer::address_of(sender);
@@ -146,7 +147,8 @@ module rwa_addr::SpoutToken {
 
     // Returns balance in the primary fungible store for this token's metadata
     #[view]
-    public fun balance(owner: address): u64 acquires Token {
+    public fun balance(owner: address): u64 acquires Token {    
+        // @rwa_addr is the publisher address
        let publisher = @rwa_addr;
        let token = borrow_global<Token>(publisher);
        pfs::balance(owner, token.metadata)
@@ -154,8 +156,9 @@ module rwa_addr::SpoutToken {
 
     // Returns the metadata object address for this token
     #[view]
-    public fun metadata_address(): address acquires Token {
-        let publisher = @rwa_addr;
+    public fun metadata_address(publisher: address): address acquires Token {
+        // @rwa_addr is the publisher address
+        let publisher = @rwa_addr;                                             
         let token = borrow_global<Token>(publisher);
         object::object_address(&token.metadata)
     }
@@ -163,6 +166,7 @@ module rwa_addr::SpoutToken {
     // Returns the token metadata object
     #[view]
     public fun get_metadata(): Object<fa::Metadata> acquires Token {
+        // @rwa_addr is the publisher address
         let publisher = @rwa_addr;
         let token = borrow_global<Token>(publisher);
         token.metadata

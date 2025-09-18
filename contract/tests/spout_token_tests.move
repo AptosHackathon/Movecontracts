@@ -24,7 +24,7 @@ module rwa_addr::spout_token_tests {
         SpoutToken::mint(&admin_signer, USER, 1_000);
 
         // Check balance == 1_000
-        let metadata_obj = SpoutToken::get_metadata(ADMIN);
+        let metadata_obj = SpoutToken::get_metadata();
         let bal_before = pfs::balance(USER, metadata_obj);
         assert!(bal_before == 1_000, 100);
 
@@ -61,7 +61,7 @@ module rwa_addr::spout_token_force_transfer_tests {
 
         // Mint 1_000 to FROM
         SpoutToken::mint(&admin_signer, FROM, 1_000);
-        let meta = SpoutToken::get_metadata(ADMIN);
+        let meta = SpoutToken::get_metadata();
         assert!(pfs::balance(FROM, meta) == 1_000, 200);
         assert!(pfs::balance(TO, meta) == 0, 201);
 

@@ -14,7 +14,8 @@ module rwa_addr::kyc_registry {
         move_to(sender, Config { admin, verified: table::new() });
     }
 
-    fun assert_admin(sender: &signer) acquires Config { // Modifier for the entry functions to check eligibility for calling the functions
+    // Modifier for the entry functions to check eligibility for calling the functions
+    fun assert_admin(sender: &signer) acquires Config {
         let c = borrow_global<Config>(signer::address_of(sender));
         assert!(signer::address_of(sender) == c.admin, E_NOT_ADMIN);
     }
