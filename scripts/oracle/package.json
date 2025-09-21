@@ -1,0 +1,23 @@
+{
+  "name": "spout-oracle-feeder",
+  "version": "1.0.0",
+  "description": "Switchboard oracle feeder for SpoutToken",
+  "main": "switchboard-feeder.ts",
+  "scripts": {
+    "create-aggregator": "ts-node api/switchboard-feeder.ts",
+    "update-prices": "ts-node api/update-prices.ts",
+    "log-updates": "ts-node api/log-updates.ts",
+    "build": "tsc",
+    "dev": "ts-node --watch api/switchboard-feeder.ts"
+  },
+  "dependencies": {
+    "@switchboard-xyz/aptos-sdk": "^0.1.0",
+    "@aptos-labs/ts-sdk": "^1.0.0",
+    "dotenv": "^16.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "ts-node": "^10.0.0"
+  }
+}

@@ -7,7 +7,7 @@ module rwa_addr::SpoutToken {
     use aptos_framework::object::{Self, Object};
     use aptos_framework::primary_fungible_store as pfs;
     use rwa_addr::kyc_registry;
-    use rwa_addr::compliance_policy; // DFA hooks not wired on this framework rev
+    // use rwa_addr::compliance_policy; // DFA hooks not wired on this framework rev
 
     const E_TOKEN_ALREADY_EXISTS: u64 = 0;
     const E_NOT_AUTHORIZED: u64 = 1;
