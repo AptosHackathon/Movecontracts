@@ -18,7 +18,7 @@ module rwa_addr::oracle {
         let admin_addr = signer::address_of(admin);
         move_to(admin, Config { admin: admin_addr, feeders: table::new(), price_micro_usd: initial_price_micro_usd, last_updated_ts: 0 });
     }
-
+ 
     fun assert_admin(s: &signer) acquires Config {
         let c = borrow_global<Config>(signer::address_of(s));
         assert!(c.admin == signer::address_of(s), E_NOT_ADMIN);
@@ -52,5 +52,3 @@ module rwa_addr::oracle {
         (c.price_micro_usd, c.last_updated_ts)
     }
 }
-
-

@@ -1,7 +1,7 @@
 module rwa_addr::orders {
     use std::signer;
     use aptos_framework::event;
-    use aptos_framework::guid;
+    use aptos_framework::account;
     use rwa_addr::kyc_registry;
     use rwa_addr::oracle;
 
@@ -15,6 +15,7 @@ module rwa_addr::orders {
         usdc_amount: u128,
         asset_amount: u128,
         price: u128,
+        oracle_ts: u64,
     }
 
     /// Emitted when a sell order is created (price from oracle)
@@ -25,6 +26,7 @@ module rwa_addr::orders {
         usdc_amount: u128,
         asset_amount: u128,
         price: u128,
+        oracle_ts: u64,
     }
 
     struct Events has key {
@@ -35,9 +37,13 @@ module rwa_addr::orders {
 
     public entry fun init(sender: &signer) {
         let admin = signer::address_of(sender);
-        let buy_guid = guid::create(sender);
-        let sell_guid = guid::create(sender);
-        move_to(sender, Events { admin, buy_events: event::new_event_handle<BuyOrderCreated>(buy_guid), sell_events: event::new_event_handle<SellOrderCreated>(sell_guid) });
+        let buy_guid = account::create_guid(sender);
+        let sell_guid = account::create_guid(sender);
+        move_to(sender, Events {
+            admin,
+            buy_events: event::new_event_handle_from_account<BuyOrderCreated>(sender),
+            sell_events: event::new_event_handle_from_account<SellOrderCreated>(sender),
+        });
     }
 
     /// Buy asset with USDC amount; fetch price from oracle and emit event immediately
@@ -45,10 +51,10 @@ module rwa_addr::orders {
         let admin = @rwa_addr;
         let user = signer::address_of(sender);
         assert!(kyc_registry::is_verified(admin, user), E_NOT_VERIFIED);
-        let (price, _) = oracle::get_price(admin);
+        let (price, oracle_ts) = oracle::get_price(admin);
         let asset_amount = (usdc_amount * 1000000000000000000u128) / price; // 1e18
         let e = borrow_global_mut<Events>(admin);
-        event::emit_event<BuyOrderCreated>(&mut e.buy_events, BuyOrderCreated { user, ticker, token, usdc_amount, asset_amount, price });
+        event::emit_event<BuyOrderCreated>(&mut e.buy_events, BuyOrderCreated { user, ticker, token, usdc_amount, asset_amount, price, oracle_ts });
     }
 
     /// Sell asset for USDC; fetch price from oracle and emit event immediately
@@ -56,9 +62,9 @@ module rwa_addr::orders {
         let admin = @rwa_addr;
         let user = signer::address_of(sender);
         assert!(kyc_registry::is_verified(admin, user), E_NOT_VERIFIED);
-        let (price, _) = oracle::get_price(admin);
+        let (price, oracle_ts) = oracle::get_price(admin);
         let usdc_amount = (token_amount * price) / 1000000000000000000u128; // 1e18
         let e = borrow_global_mut<Events>(admin);
-        event::emit_event<SellOrderCreated>(&mut e.sell_events, SellOrderCreated { user, ticker, token, usdc_amount, asset_amount: token_amount, price });
+        event::emit_event<SellOrderCreated>(&mut e.sell_events, SellOrderCreated { user, ticker, token, usdc_amount, asset_amount: token_amount, price, oracle_ts });
     }
 }
