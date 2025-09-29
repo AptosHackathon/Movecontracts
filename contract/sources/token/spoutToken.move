@@ -12,7 +12,7 @@ module rwa_addr::SpoutToken {
     const E_TOKEN_ALREADY_EXISTS: u64 = 0;
     const E_NOT_AUTHORIZED: u64 = 1;
 
-    struct Token<T> has key {
+    struct Token<phantom T> has key {
         metadata: Object<fa::Metadata>,
         mint_ref: fa::MintRef,
         burn_ref: fa::BurnRef,
@@ -69,7 +69,7 @@ module rwa_addr::SpoutToken {
         sender: &signer, 
         recipient: address, 
         amount: u64
-    ) acquires Token<T>, Roles {
+    ) acquires Token, Roles {
         let admin = signer::address_of(sender);
         assert_admin(admin, admin);
         // Require KYC for recipient using the same admin address as the registry owner
@@ -89,7 +89,7 @@ module rwa_addr::SpoutToken {
         sender: &signer,
         to: address,
         amount: u64
-    ) acquires Token<T>, Roles {
+    ) acquires Token, Roles {
         // @rwa_addr is the publisher address
         let publisher = @rwa_addr;
         let roles = borrow_global<Roles>(publisher);
@@ -105,7 +105,7 @@ module rwa_addr::SpoutToken {
         sender: &signer,
         user: address,
         amount: u64
-    ) acquires Token<T>, Roles {
+    ) acquires Token, Roles {
         let admin = signer::address_of(sender);
         assert_admin(admin, admin);
         // assert!(kyc_registry::is_verified(admin, user), error::permission_denied(E_NOT_AUTHORIZED));
@@ -121,7 +121,7 @@ module rwa_addr::SpoutToken {
         from: address,
         to: address,
         amount: u64
-    ) acquires Token<T>, Roles {
+    ) acquires Token, Roles {
         let admin = signer::address_of(sender);
         assert_admin(admin, admin);
         // Optional: enforce KYC on the recipient
@@ -140,7 +140,7 @@ module rwa_addr::SpoutToken {
 
     // Returns balance in the primary fungible store for this token's metadata
     #[view]
-    public fun balance<T>(owner: address): u64 acquires Token<T> {    
+    public fun balance<T>(owner: address): u64 acquires Token {    
         // @rwa_addr is the publisher address
        let publisher = @rwa_addr;
        let token = borrow_global<Token<T>>(publisher);
@@ -149,7 +149,7 @@ module rwa_addr::SpoutToken {
 
     // Returns the metadata object address for this token
     #[view]
-    public fun metadata_address<T>(publisher: address): address acquires Token<T> {
+    public fun metadata_address<T>(publisher: address): address acquires Token {
         // @rwa_addr is the publisher address
         let publisher = @rwa_addr;                                              
         let token = borrow_global<Token<T>>(publisher);
@@ -158,7 +158,7 @@ module rwa_addr::SpoutToken {
 
     // Returns the token metadata object
     #[view]
-    public fun get_metadata<T>(): Object<fa::Metadata> acquires Token<T> {
+    public fun get_metadata<T>(): Object<fa::Metadata> acquires Token {
         // @rwa_addr is the publisher address
         let publisher = @rwa_addr;
         let token = borrow_global<Token<T>>(publisher);
