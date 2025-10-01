@@ -23,7 +23,8 @@ module rwa_addr::kyc_registry {
     public entry fun set_verified(sender: &signer, user: address, is_verified: bool) acquires Config {
         assert_admin(sender);
         let c = borrow_global_mut<Config>(signer::address_of(sender));
-        if (table::contains(&c.verified, user)) { table::remove(&mut c.verified, user); };
+        // remove if already exists and revoke if is_verified is false
+        if (table::contains(&c.verified, user)) { table::remove(&mut c.verified, user); }; 
         if (is_verified) { table::add(&mut c.verified, user, true); };
     }
 
