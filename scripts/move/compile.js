@@ -18,6 +18,12 @@ async function compile() {
       message_board_addr: process.env.MODULE_PUBLISHER_ACCOUNT_ADDRESS,
       rwa_addr: process.env.MODULE_PUBLISHER_ACCOUNT_ADDRESS,
     },
+    extraArguments: [
+      "--override-std", process.env.APP_NETWORK || "testnet"
+    ],
   });
 }
 compile();
+
+
+

@@ -5,6 +5,9 @@ module rwa_addr::orders {
     use rwa_addr::oracle;
 
     const E_NOT_VERIFIED: u64 = 0;
+    
+    // Publisher address where KYC/Oracle are initialized (hardcoded for now)
+    const ADMIN_ADDR: address = @0xc50c45c8cf451cf262827f258bba2254c94487311c326fa097ce30c39beda4ea;
 
     /// Emitted when a buy order is created (price from oracle)
     #[event]
@@ -32,20 +35,26 @@ module rwa_addr::orders {
 
     /// Buy asset with USDC amount; fetch price from oracle and emit event immediately
     public entry fun buy_asset(sender: &signer, ticker: vector<u8>, usdc_amount: u128) {
-        let admin = @rwa_addr;
         let user = signer::address_of(sender);
-        assert!(kyc_registry::is_verified(admin, user), E_NOT_VERIFIED);
-        let (price, oracle_ts) = oracle::get_price(admin);
+        
+        // Check KYC verification at the publisher address where KYC registry was initialized
+        assert!(kyc_registry::is_verified(ADMIN_ADDR, user), E_NOT_VERIFIED);
+        
+        // Get price from oracle
+        let (price, oracle_ts) = oracle::get_price(ADMIN_ADDR);
         let asset_amount = (usdc_amount * 1000000000000000000u128) / price; // 1e18
         event::emit(BuyOrderCreated { user, ticker, usdc_amount, asset_amount, price, oracle_ts });
     }
 
     /// Sell asset for USDC; fetch price from oracle and emit event immediately
     public entry fun sell_asset(sender: &signer, ticker: vector<u8>, token_amount: u128) {
-        let admin = @rwa_addr;
         let user = signer::address_of(sender);
-        assert!(kyc_registry::is_verified(admin, user), E_NOT_VERIFIED);
-        let (price, oracle_ts) = oracle::get_price(admin);
+        
+        // Check KYC verification at the publisher address where KYC registry was initialized
+        assert!(kyc_registry::is_verified(ADMIN_ADDR, user), E_NOT_VERIFIED);
+        
+        // Get price from oracle
+        let (price, oracle_ts) = oracle::get_price(ADMIN_ADDR);
         let usdc_amount = (token_amount * price) / 1000000000000000000u128; // 1e18
         event::emit(SellOrderCreated { user, ticker, usdc_amount, asset_amount: token_amount, price, oracle_ts });
     }

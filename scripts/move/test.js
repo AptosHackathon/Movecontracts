@@ -11,6 +11,9 @@ async function test() {
       message_board_addr: "0x100",
       rwa_addr: "0x100",
     },
+    extraArguments: [
+      "--override-std", process.env.APP_NETWORK || "testnet"
+    ],
   });
 }
 test();

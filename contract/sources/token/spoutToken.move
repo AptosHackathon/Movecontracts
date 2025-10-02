@@ -164,4 +164,11 @@ module rwa_addr::SpoutToken {
         let token = borrow_global<Token<T>>(publisher);
         token.metadata
     }
+
+    #[view]
+    public fun total_supply<T>(): option::Option<u128> acquires Token {
+        let publisher = @rwa_addr;
+        let token = borrow_global<Token<T>>(publisher);
+        fa::supply(token.metadata)
+    }
 }
