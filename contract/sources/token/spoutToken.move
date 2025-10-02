@@ -12,6 +12,14 @@ module rwa_addr::SpoutToken {
     const E_TOKEN_ALREADY_EXISTS: u64 = 0;
     const E_NOT_AUTHORIZED: u64 = 1;
 
+    // Phantom type markers for different tokens
+    struct USD has drop {}
+    struct USDC has drop {}
+    struct LQD has drop {}
+    struct TSLA has drop {}
+    struct AAPL has drop {}
+    struct GOLD has drop {}
+
     struct Token<phantom T> has key {
         metadata: Object<fa::Metadata>,
         mint_ref: fa::MintRef,

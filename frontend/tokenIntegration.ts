@@ -67,26 +67,70 @@ export async function getTokenMetadata(tokenType: TokenType = TokenType.USDC) {
 
 /**
  * Get total supply of token
+ * Uses the fungible asset metadata directly for accurate supply
  */
 export async function getTotalSupply(tokenType: TokenType = TokenType.USDC): Promise<bigint> {
   try {
-    const supply = await aptos.view({
-      payload: {
-        function: `${MODULE_ADDRESS}::SpoutToken::total_supply`,
-        typeArguments: [tokenType],
-        functionArguments: []
+    // Method 1: Try view function first
+    try {
+      const supply = await aptos.view({
+        payload: {
+          function: `${MODULE_ADDRESS}::SpoutToken::total_supply`,
+          typeArguments: [tokenType],
+          functionArguments: []
+        }
+      });
+      
+      // Returns Option<u128>, check if Some
+      if (supply[0] && supply[0].vec && supply[0].vec.length > 0) {
+        return BigInt(supply[0].vec[0]);
       }
+    } catch (viewError) {
+      console.log("View function failed, trying direct resource query...");
+    }
+    
+    // Method 2: Query the metadata resource directly (more reliable)
+    // For USDC, the metadata address is: 0x05e6b6fc61962d61ec268f45a5d431811f54e8375c878b9e0c11b8feabe72439
+    const metadataAddress = await getMetadataAddress(tokenType);
+    
+    const supplyResource = await aptos.getAccountResource({
+      accountAddress: metadataAddress,
+      resourceType: "0x1::fungible_asset::ConcurrentSupply"
     });
     
-    // Returns Option<u128>, check if Some
-    if (supply[0] && supply[0].vec && supply[0].vec.length > 0) {
-      return BigInt(supply[0].vec[0]);
-    }
-    return BigInt(0);
+    return BigInt(supplyResource.current.value);
+    
   } catch (error) {
     console.error("Error fetching total supply:", error);
     return BigInt(0);
   }
+}
+
+/**
+ * Get the metadata address for a token type
+ */
+async function getMetadataAddress(tokenType: TokenType): Promise<string> {
+  // Token type to metadata address mapping
+  // These are the actual metadata object addresses on-chain
+  const metadataAddresses: Record<TokenType, string> = {
+    [TokenType.USDC]: "0x05e6b6fc61962d61ec268f45a5d431811f54e8375c878b9e0c11b8feabe72439",
+    [TokenType.LQD]: "", // Add after token creation
+    [TokenType.TSLA]: "", // Add after token creation
+    [TokenType.AAPL]: "", // Add after token creation
+    [TokenType.GOLD]: "", // Add after token creation
+  };
+  
+  const address = metadataAddresses[tokenType];
+  if (!address) {
+    // Fallback: query from Token resource
+    const tokenResource = await aptos.getAccountResource({
+      accountAddress: PUBLISHER_ADDRESS,
+      resourceType: `${MODULE_ADDRESS}::SpoutToken::Token<${tokenType}>`
+    });
+    return tokenResource.metadata.inner;
+  }
+  
+  return address;
 }
 
 /**
