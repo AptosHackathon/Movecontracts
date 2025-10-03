@@ -96,8 +96,10 @@ module rwa_addr::orders {
         
         // Get price from appropriate oracle based on ticker
         let (price, oracle_ts) = get_oracle_price(ticker);
-        // Reverse calculation: (asset_amount * price) / (100 * 1e6) = usdc_amount
-        let usdc_amount = (token_amount * price) / (100u128 * 1000000u128);
+        // Reverse calculation: asset_amount has 2 decimals, price has 6 decimals
+        // Formula: (asset_amount * price) / 1e6 = usdc_amount with 2 decimals
+        // Example: (100 * 111690000) / 1000000 = 11169 (represents 111.69 USDC)
+        let usdc_amount = (token_amount * price) / 1000000u128;
         
         // Emit modern event (for transaction-based querying)
         event::emit(SellOrderCreated { user, ticker, usdc_amount, asset_amount: token_amount, price, oracle_ts });
