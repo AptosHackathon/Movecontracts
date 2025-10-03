@@ -11,8 +11,6 @@ module rwa_addr::pyth_oracle {
     const E_NEGATIVE_PRICE: u64 = 3;
 
     // Pyth price feed IDs for different assets
-    // From https://pyth.network/developers/price-feed-ids
-    // Note: Aptos uses the Pyth price feed ID without the `0x` prefix
     
     /// Get BTC/USD price feed ID
     public fun btc_usd_price_id(): vector<u8> {

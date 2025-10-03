@@ -5,7 +5,7 @@ module rwa_addr::orders {
     use rwa_addr::kyc_registry;
     use rwa_addr::oracle;
     use rwa_addr::multi_oracle;
-    use rwa_addr::pyth_oracle;
+    // use rwa_addr::pyth_oracle;
 
     const E_NOT_VERIFIED: u64 = 0;
     

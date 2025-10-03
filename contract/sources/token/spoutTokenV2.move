@@ -1,4 +1,4 @@
-module rwa_addr::SpoutToken {
+module rwa_addr::SpoutTokenV2 {
     use std::signer;
     use std::option;
     use std::string::utf8;
@@ -7,7 +7,6 @@ module rwa_addr::SpoutToken {
     use aptos_framework::object::{Self, Object};
     use aptos_framework::primary_fungible_store as pfs;
     use rwa_addr::kyc_registry;
-    // use rwa_addr::compliance_policy; // DFA hooks not wired on this framework rev
 
     const E_TOKEN_ALREADY_EXISTS: u64 = 0;
     const E_NOT_AUTHORIZED: u64 = 1;
@@ -15,6 +14,7 @@ module rwa_addr::SpoutToken {
     // Phantom type markers for different tokens
     struct USD has drop {}
     struct USDC has drop {}
+    struct USDT has drop {}
     struct LQD has drop {}
     struct TSLA has drop {}
     struct AAPL has drop {}
@@ -116,7 +116,6 @@ module rwa_addr::SpoutToken {
     ) acquires Token, Roles {
         let admin = signer::address_of(sender);
         assert_admin(admin, admin);
-        // assert!(kyc_registry::is_verified(admin, user), error::permission_denied(E_NOT_AUTHORIZED));
         let token = borrow_global<Token<T>>(admin);
         // Get or create the user's primary store, then burn from it
         let user_store = pfs::ensure_primary_store_exists(user, token.metadata);
@@ -132,8 +131,6 @@ module rwa_addr::SpoutToken {
     ) acquires Token, Roles {
         let admin = signer::address_of(sender);
         assert_admin(admin, admin);
-        // Optional: enforce KYC on the recipient
-        // assert!(kyc_registry::is_verified(admin, to), error::permission_denied(E_NOT_AUTHORIZED));
         let token = borrow_global<Token<T>>(admin);
         
         // Burn from source user's primary store
@@ -149,8 +146,8 @@ module rwa_addr::SpoutToken {
     // Returns balance in the primary fungible store for this token's metadata
     #[view]
     public fun balance<T>(owner: address): u64 acquires Token {    
-        // @rwa_addr is the publisher address
-       let publisher = @rwa_addr;
+        // Use the actual publisher address where Token was stored
+       let publisher = @0xc50c45c8cf451cf262827f258bba2254c94487311c326fa097ce30c39beda4ea;
        let token = borrow_global<Token<T>>(publisher);
        pfs::balance(owner, token.metadata)
     }   
@@ -158,8 +155,8 @@ module rwa_addr::SpoutToken {
     // Returns the metadata object address for this token
     #[view]
     public fun metadata_address<T>(publisher: address): address acquires Token {
-        // @rwa_addr is the publisher address
-        let publisher = @rwa_addr;                                              
+        // Use the actual publisher address where Token was stored
+        let publisher = @0xc50c45c8cf451cf262827f258bba2254c94487311c326fa097ce30c39beda4ea;                                              
         let token = borrow_global<Token<T>>(publisher);
         object::object_address(&token.metadata)
     }
@@ -167,16 +164,17 @@ module rwa_addr::SpoutToken {
     // Returns the token metadata object
     #[view]
     public fun get_metadata<T>(): Object<fa::Metadata> acquires Token {
-        // @rwa_addr is the publisher address
-        let publisher = @rwa_addr;
+        // Use the actual publisher address where Token was stored
+        let publisher = @0xc50c45c8cf451cf262827f258bba2254c94487311c326fa097ce30c39beda4ea;
         let token = borrow_global<Token<T>>(publisher);
         token.metadata
     }
 
     #[view]
     public fun total_supply<T>(): option::Option<u128> acquires Token {
-        let publisher = @rwa_addr;
+        let publisher = @0xc50c45c8cf451cf262827f258bba2254c94487311c326fa097ce30c39beda4ea;
         let token = borrow_global<Token<T>>(publisher);
         fa::supply(token.metadata)
     }
 }
+

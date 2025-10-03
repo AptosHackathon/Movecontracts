@@ -16,7 +16,6 @@ module rwa_addr::multi_oracle {
     struct MultiConfig has key {
         admin: address,
         feeders: Table<address, bool>,
-        // Map ticker -> PriceData
         prices: Table<String, PriceData>,
     }
 
@@ -49,7 +48,6 @@ module rwa_addr::multi_oracle {
 
     /// Push price for a specific ticker
     public entry fun push_price(feeder: &signer, ticker: vector<u8>, price_micro_usd: u128, timestamp_secs: u64) acquires MultiConfig {
-        // Note: Resource is at feeder address (admin), not @rwa_addr
         let admin = signer::address_of(feeder);
         let c = borrow_global_mut<MultiConfig>(admin);
         let f = signer::address_of(feeder);
