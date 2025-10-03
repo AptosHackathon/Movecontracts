@@ -75,8 +75,11 @@ module rwa_addr::orders {
         
         // Get price from appropriate oracle based on ticker
         let (price, oracle_ts) = get_oracle_price(ticker);
-        // 2 decimal precision: (1000 * 100 * 1e6) / price = 895 (represents 8.95 LQD)
-        let asset_amount = (usdc_amount * 100u128 * 1000000u128) / price; 
+        // 6 decimal precision: multiply by 1e12 then divide by price to get 6 decimals
+        // price is already in micro USD (6 decimals), so: (usdc * 1e12) / price = asset with 6 decimals
+        // Example: (1000 * 1000000000000) / 111690000 = 8953353030 → truncate to fit
+        // Better: (usdc * 1e6 * 1e6) / price = (1000 * 1000000000000) / 111690000 = 8953353030
+        let asset_amount = (usdc_amount * 1000000000000u128) / price; 
         
         // Emit modern event (for transaction-based querying)
         event::emit(BuyOrderCreated { user, ticker, usdc_amount, asset_amount, price, oracle_ts });
@@ -96,10 +99,10 @@ module rwa_addr::orders {
         
         // Get price from appropriate oracle based on ticker
         let (price, oracle_ts) = get_oracle_price(ticker);
-        // Reverse calculation: asset_amount has 2 decimals, price has 6 decimals
-        // Formula: (asset_amount * price) / 1e6 = usdc_amount with 2 decimals
-        // Example: (100 * 111690000) / 1000000 = 11169 (represents 111.69 USDC)
-        let usdc_amount = (token_amount * price) / 1000000u128;
+        // Reverse calculation: asset_amount has 6 decimals, price has 6 decimals
+        // Formula: (asset_amount * price) / 1e12 = usdc_amount with 6 decimals
+        // Example: (8953353 * 111690000) / 1000000000000 = 999999 (represents 0.999999 USDC ≈ 1 USDC)
+        let usdc_amount = (token_amount * price) / 1000000000000u128;
         
         // Emit modern event (for transaction-based querying)
         event::emit(SellOrderCreated { user, ticker, usdc_amount, asset_amount: token_amount, price, oracle_ts });
