@@ -75,7 +75,8 @@ module rwa_addr::orders {
         
         // Get price from appropriate oracle based on ticker
         let (price, oracle_ts) = get_oracle_price(ticker);
-        let asset_amount = (usdc_amount * 1000000000000000000u128) / price; // 1e18
+        // 2 decimal precision: (1000 * 100 * 1e6) / price = 895 (represents 8.95 LQD)
+        let asset_amount = (usdc_amount * 100u128 * 1000000u128) / price; 
         
         // Emit modern event (for transaction-based querying)
         event::emit(BuyOrderCreated { user, ticker, usdc_amount, asset_amount, price, oracle_ts });
@@ -95,7 +96,8 @@ module rwa_addr::orders {
         
         // Get price from appropriate oracle based on ticker
         let (price, oracle_ts) = get_oracle_price(ticker);
-        let usdc_amount = (token_amount * price) / 1000000000000000000u128; // 1e18
+        // Reverse calculation: (asset_amount * price) / (100 * 1e6) = usdc_amount
+        let usdc_amount = (token_amount * price) / (100u128 * 1000000u128);
         
         // Emit modern event (for transaction-based querying)
         event::emit(SellOrderCreated { user, ticker, usdc_amount, asset_amount: token_amount, price, oracle_ts });
