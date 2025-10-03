@@ -4,12 +4,29 @@ module rwa_addr::orders {
     use aptos_framework::account;
     use rwa_addr::kyc_registry;
     use rwa_addr::oracle;
+    use rwa_addr::multi_oracle;
     use rwa_addr::pyth_oracle;
 
     const E_NOT_VERIFIED: u64 = 0;
     
     // Publisher address where KYC/Oracle are initialized (hardcoded for now)
     const ADMIN_ADDR: address = @0xc50c45c8cf451cf262827f258bba2254c94487311c326fa097ce30c39beda4ea;
+
+    /// Helper function to get price based on ticker
+    /// NOTE: For testnet, Pyth is disabled (using our own custom multi-asset oracle)
+    fun get_oracle_price(ticker: vector<u8>): (u128, u64) {
+        // TESTNET: Use multi-asset oracle (supports LQD, BTC, AAPL, etc!)
+        multi_oracle::get_price(ADMIN_ADDR, ticker)
+        
+        // MAINNET: Uncomment to use Pyth for supported tickers
+        // if (ticker == b"LQD") { return pyth_oracle::get_lqd_price() }
+        // else if (ticker == b"BTC") { return pyth_oracle::get_btc_price() }
+        // else if (ticker == b"ETH") { return pyth_oracle::get_eth_price() }
+        // else if (ticker == b"AAPL") { return pyth_oracle::get_aapl_price() }
+        // else if (ticker == b"TSLA") { return pyth_oracle::get_tsla_price() }
+        // else if (ticker == b"GOLD") { return pyth_oracle::get_gold_price() }
+        // else { multi_oracle::get_price(ADMIN_ADDR, ticker) }
+    }
 
     /// Emitted when a buy order is created (price from oracle)
     #[event]
@@ -57,23 +74,7 @@ module rwa_addr::orders {
         assert!(kyc_registry::is_verified(ADMIN_ADDR, user), E_NOT_VERIFIED);
         
         // Get price from appropriate oracle based on ticker
-        let (price, oracle_ts) = if (ticker == b"LQD") {
-            pyth_oracle::get_lqd_price()
-        } else if (ticker == b"BTC") {
-            pyth_oracle::get_btc_price()
-        } else if (ticker == b"ETH") {
-            pyth_oracle::get_eth_price()
-        } else if (ticker == b"AAPL") {
-            pyth_oracle::get_aapl_price()
-        } else if (ticker == b"TSLA") {
-            pyth_oracle::get_tsla_price()
-        } else if (ticker == b"GOLD") {
-            pyth_oracle::get_gold_price()
-        } else {
-            // Fallback to custom oracle for other tickers
-            oracle::get_price(ADMIN_ADDR)
-        };
-        
+        let (price, oracle_ts) = get_oracle_price(ticker);
         let asset_amount = (usdc_amount * 1000000000000000000u128) / price; // 1e18
         
         // Emit modern event (for transaction-based querying)
@@ -93,23 +94,7 @@ module rwa_addr::orders {
         assert!(kyc_registry::is_verified(ADMIN_ADDR, user), E_NOT_VERIFIED);
         
         // Get price from appropriate oracle based on ticker
-        let (price, oracle_ts) = if (ticker == b"LQD") {
-            pyth_oracle::get_lqd_price()
-        } else if (ticker == b"BTC") {
-            pyth_oracle::get_btc_price()
-        } else if (ticker == b"ETH") {
-            pyth_oracle::get_eth_price()
-        } else if (ticker == b"AAPL") {
-            pyth_oracle::get_aapl_price()
-        } else if (ticker == b"TSLA") {
-            pyth_oracle::get_tsla_price()
-        } else if (ticker == b"GOLD") {
-            pyth_oracle::get_gold_price()
-        } else {
-            // Fallback to custom oracle for other tickers
-            oracle::get_price(ADMIN_ADDR)
-        };
-        
+        let (price, oracle_ts) = get_oracle_price(ticker);
         let usdc_amount = (token_amount * price) / 1000000000000000000u128; // 1e18
         
         // Emit modern event (for transaction-based querying)

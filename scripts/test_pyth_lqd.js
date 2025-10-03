@@ -26,8 +26,8 @@ async function fetchPriceUpdate() {
     console.log("📊 Price data:", data.parsed?.[0]?.price);
     console.log("");
     
-    // Return the VAA (Verifiable Action Approval) data
-    return data.binary.data;
+    // Return the VAA (Verifiable Action Approval) data with 0x prefix
+    return data.binary.data.map(vaa => '0x' + vaa);
   } catch (error) {
     console.error("❌ Error fetching from Hermes:", error.message);
     return null;
