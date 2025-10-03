@@ -55,7 +55,7 @@ function hexToString(hex) {
 }
 
 /**
- * Fetch events from a specific transaction
+ * Fetch events from a specif"ic transaction
  */
 async function getTransactionEvents(txHash) {
   console.log(`🔍 Fetching transaction: ${txHash}\n`);
@@ -144,6 +144,10 @@ async function startListener() {
   
   console.log(`📊 Starting from version: ${lastVersion}\n`);
   
+  // Array to store all events
+  const allBuyOrders = [];
+  const allSellOrders = [];
+  
   setInterval(async () => {
     try {
       // Fetch new transactions
@@ -158,10 +162,28 @@ async function startListener() {
         for (const event of txn.events) {
           if (event.type.includes("::orders::BuyOrderCreated")) {
             const ticker = hexToString(event.data.ticker);
+            
+            // Push to array
+            const buyOrder = {
+              type: 'BUY',
+              ticker,
+              user: event.data.user,
+              usdc_amount: event.data.usdc_amount,
+              asset_amount: event.data.asset_amount,
+              price: event.data.price,
+              oracle_ts: event.data.oracle_ts,
+              tx_hash: txn.hash,
+              timestamp: new Date(Number(txn.timestamp) / 1000).toISOString()
+            };
+            allBuyOrders.push(buyOrder);
+            
             console.log(`🟢 NEW BUY ORDER: ${ticker}`);
             console.log(`   User: ${event.data.user}`);
             console.log(`   USDC: ${event.data.usdc_amount}`);
             console.log(`   TX:   ${txn.hash}`);
+            console.log(`   📊 Total Buy Orders: ${allBuyOrders.length}`);
+            console.log("");
+            console.log("All Buy Orders:", JSON.stringify(allBuyOrders, null, 2));
             console.log("");
             
             // YOUR BUSINESS LOGIC HERE
@@ -169,10 +191,28 @@ async function startListener() {
           
           if (event.type.includes("::orders::SellOrderCreated")) {
             const ticker = hexToString(event.data.ticker);
+            
+            // Push to array
+            const sellOrder = {
+              type: 'SELL',
+              ticker,
+              user: event.data.user,
+              usdc_amount: event.data.usdc_amount,
+              asset_amount: event.data.asset_amount,
+              price: event.data.price,
+              oracle_ts: event.data.oracle_ts,
+              tx_hash: txn.hash,
+              timestamp: new Date(Number(txn.timestamp) / 1000).toISOString()
+            };
+            allSellOrders.push(sellOrder);
+            
             console.log(`🔴 NEW SELL ORDER: ${ticker}`);
             console.log(`   User: ${event.data.user}`);
             console.log(`   USDC: ${event.data.usdc_amount}`);
             console.log(`   TX:   ${txn.hash}`);
+            console.log(`   📊 Total Sell Orders: ${allSellOrders.length}`);
+            console.log("");
+            console.log("All Sell Orders:", JSON.stringify(allSellOrders, null, 2));
             console.log("");
             
             // YOUR BUSINESS LOGIC HERE
@@ -189,6 +229,9 @@ async function startListener() {
   
   process.on('SIGINT', () => {
     console.log("\n🛑 Stopping...");
+    console.log(`\n📊 Final Stats:`);
+    console.log(`   Total Buy Orders: ${allBuyOrders.length}`);
+    console.log(`   Total Sell Orders: ${allSellOrders.length}`);
     process.exit(0);
   });
 }

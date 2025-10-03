@@ -1,0 +1,9 @@
+ enum TokenType {
+    USDC = "u8",
+    LQD = "0x55816489757de1d92999dad0629734b877a22455a7fe05e1de36645389646ceb::SpoutToken::LQD",
+    TSLA = "0x55816489757de1d92999dad0629734b877a22455a7fe05e1de36645389646ceb::SpoutToken::TSLA",
+    AAPL = "0x55816489757de1d92999dad0629734b877a22455a7fe05e1de36645389646ceb::SpoutToken::AAPL"
+  }
+
+
+  export {TokenType};
