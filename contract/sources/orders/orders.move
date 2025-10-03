@@ -18,7 +18,7 @@ module rwa_addr::orders {
         // TESTNET: Use multi-asset oracle (supports LQD, BTC, AAPL, etc!)
         multi_oracle::get_price(ADMIN_ADDR, ticker)
         
-        // MAINNET: Uncomment to use Pyth for supported tickers
+        // Pyth is disabled for now, but can be uncommented if on mainnet to fetch asset price from Pyth
         // if (ticker == b"LQD") { return pyth_oracle::get_lqd_price() }
         // else if (ticker == b"BTC") { return pyth_oracle::get_btc_price() }
         // else if (ticker == b"ETH") { return pyth_oracle::get_eth_price() }
