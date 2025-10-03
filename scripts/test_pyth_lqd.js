@@ -105,14 +105,14 @@ async function testLqdPrice() {
     console.log("   Could not fetch fee, continuing anyway...\n");
   }
   
-  // Call get_lqd_price_with_update
-  console.log("🚀 Calling get_lqd_price_with_update...");
+  // Call update_lqd_price
+  console.log("🚀 Calling update_lqd_price...");
   
   try {
     const transaction = await aptos.transaction.build.simple({
       sender: account.accountAddress,
       data: {
-        function: `${MODULE_ADDRESS}::pyth_oracle::get_lqd_price_with_update`,
+        function: `${MODULE_ADDRESS}::pyth_oracle::update_lqd_price`,
         typeArguments: [],
         functionArguments: [priceUpdateData]
       }

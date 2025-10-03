@@ -53,11 +53,20 @@ module rwa_addr::pyth_oracle {
     
     /// Get LQD/USD price with price update
     /// pyth_price_update: Price update data from Hermes (https://hermes.pyth.network)
-    public entry fun get_lqd_price_with_update(user: &signer, pyth_price_update: vector<vector<u8>>) {
+    public fun get_lqd_price_with_update(user: &signer, pyth_price_update: vector<vector<u8>>): Price {
         // First update the Pyth price feeds
         let coins = coin::withdraw<aptos_framework::aptos_coin::AptosCoin>(user, pyth::get_update_fee(&pyth_price_update));
         pyth::update_price_feeds(pyth_price_update, coins);
 
+        // Read the current price from the LQD price feed
+        let lqd_price_identifier = lqd_usd_price_id();
+        let lqd_usd_price_id = price_identifier::from_byte_vec(lqd_price_identifier);
+        pyth::get_price(lqd_usd_price_id)
+    }
+    
+    /// Update LQD price on-chain (entry function version)
+    public entry fun update_lqd_price(user: &signer, pyth_price_update: vector<vector<u8>>) {
+        let _price = get_lqd_price_with_update(user, pyth_price_update);
         // Price is now updated on-chain, can be queried via view function
     }
 
