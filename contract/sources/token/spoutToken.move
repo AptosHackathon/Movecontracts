@@ -45,7 +45,7 @@ module rwa_addr::SpoutToken {
         // Initialize the fungible asset metadata using the correct current API
         pfs::create_primary_store_enabled_fungible_asset(
             &constructor_ref,
-            option::some(99999999999u128), // max_supply (optional)
+            option::none<u128>(), // unlimited max_supply
             utf8(name), // name
             utf8(symbol), // symbol
             decimals,

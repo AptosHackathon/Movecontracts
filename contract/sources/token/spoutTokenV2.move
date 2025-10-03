@@ -19,6 +19,10 @@ module rwa_addr::SpoutTokenV2 {
     struct TSLA has drop {}
     struct AAPL has drop {}
     struct GOLD has drop {}
+    // New phantom markers for new token instances
+    struct USDT_NEW has drop {}
+    struct LQD_NEW has drop {}
+    struct USDC_NEW has drop {}
 
     struct Token<phantom T> has key {
         metadata: Object<fa::Metadata>,
@@ -45,7 +49,7 @@ module rwa_addr::SpoutTokenV2 {
         // Initialize the fungible asset metadata using the correct current API
         pfs::create_primary_store_enabled_fungible_asset(
             &constructor_ref,
-            option::some(99999999999u128), // max_supply (optional)
+            option::none<u128>(), // unlimited max_supply
             utf8(name), // name
             utf8(symbol), // symbol
             decimals,
