@@ -11,6 +11,7 @@ module rwa_addr::simpleToken {
 
     struct Token has key {
         metadata: Object<fa::Metadata>,
+        mint_ref: fa::MintRef,
     }
 
     /// Initialize a simple token
@@ -37,10 +38,12 @@ module rwa_addr::simpleToken {
             utf8(b""), // project_uri
         );
 
+        // Generate mint ref
+        let mint_ref = fa::generate_mint_ref(&constructor_ref);
         let metadata = object::object_from_constructor_ref<fa::Metadata>(&constructor_ref);
 
         // Store the token
-        move_to(sender, Token { metadata });
+        move_to(sender, Token { metadata, mint_ref });
     }
 
     /// Mint tokens to any address (no KYC required)
@@ -62,6 +65,17 @@ module rwa_addr::simpleToken {
 
     /// Transfer tokens (no KYC required)
     public entry fun transfer(
+        sender: &signer,
+        to: address,
+        amount: u64
+    ) acquires Token {
+        let admin = signer::address_of(sender);
+        let token = borrow_global<Token>(admin);
+        pfs::transfer(sender, token.metadata, to, amount);
+    }
+
+    /// Deposit tokens to a specific address (for orders contract integration)
+    public entry fun deposit(
         sender: &signer,
         to: address,
         amount: u64

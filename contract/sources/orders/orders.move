@@ -5,7 +5,7 @@ module rwa_addr::orders {
     use rwa_addr::kyc_registry;
     use rwa_addr::oracle;
     use rwa_addr::multi_oracle;
-    use rwa_addr::SpoutTokenV2;
+    use rwa_addr::simpleToken;
     // use rwa_addr::pyth_oracle;
 
     const E_NOT_VERIFIED: u64 = 0;
@@ -74,9 +74,9 @@ module rwa_addr::orders {
         // Check KYC verification at the publisher address where KYC registry was initialized
         assert!(kyc_registry::is_verified(ADMIN_ADDR, user), E_NOT_VERIFIED);
         
-        // Deposit USDC to the contract first
+        // Deposit USDC from regularToken to the orders contract
         let usdc_amount_u64 = (usdc_amount as u64);
-        rwa_addr::SpoutTokenV2::deposit<rwa_addr::SpoutTokenV2::USDC_NEW>(sender, usdc_amount_u64);
+        simpleToken::deposit(sender, @rwa_addr, usdc_amount_u64);
         
         // Get price from appropriate oracle based on ticker
         let (price, oracle_ts) = get_oracle_price(ticker);
