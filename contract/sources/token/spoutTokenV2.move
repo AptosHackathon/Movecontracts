@@ -149,7 +149,6 @@ module rwa_addr::SpoutTokenV2 {
 
     /// Deposit tokens to the contract (module address)
     public entry fun deposit<T>(sender: &signer, amount: u64) acquires Token {
-        let caller = signer::address_of(sender);
         let publisher = @0xc50c45c8cf451cf262827f258bba2254c94487311c326fa097ce30c39beda4ea;
         let token = borrow_global<Token<T>>(publisher);
         

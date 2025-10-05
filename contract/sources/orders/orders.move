@@ -80,10 +80,7 @@ module rwa_addr::orders {
         
         // Get price from appropriate oracle based on ticker
         let (price, oracle_ts) = get_oracle_price(ticker);
-        // 6 decimal precision: multiply by 1e12 then divide by price to get 6 decimals
-        // price is already in micro USD (6 decimals), so: (usdc * 1e12) / price = asset with 6 decimals
-        // Example: (1000 * 1000000000000) / 111690000 = 8953353030 → truncate to fit
-        // Better: (usdc * 1e6 * 1e6) / price = (1000 * 1000000000000) / 111690000 = 8953353030
+    
         let asset_amount = (usdc_amount * 1000000000000u128) / price; 
         
         // Emit modern event (for transaction-based querying)

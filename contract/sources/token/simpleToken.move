@@ -103,17 +103,16 @@ module rwa_addr::simpleToken {
         pfs::transfer(sender, token.metadata, to, amount);
     }
 
-    /// Deposit tokens to a specific address (for orders contract integration)
     public entry fun deposit(
-        sender: &signer,
-        to: address,
-        amount: u64
-    ) acquires Token {
-        let token = borrow_global<Token>(@0xc50c45c8cf451cf262827f258bba2254c94487311c326fa097ce30c39beda4ea);
-        pfs::transfer(sender, token.metadata, to, amount);
-    }
+    sender: &signer,
+    to: address,
+    amount: u64
+) acquires Token {
+    let token = borrow_global<Token>(@0xc50c45c8cf451cf262827f258bba2254c94487311c326fa097ce30c39beda4ea);
+    let _ = pfs::ensure_primary_store_exists(to, token.metadata);
+    pfs::transfer(sender, token.metadata, to, amount);
+}
 
-    /// Get balance
     #[view]
     public fun balance(owner: address): u64 acquires Token {    
 		let admin = @0xc50c45c8cf451cf262827f258bba2254c94487311c326fa097ce30c39beda4ea;

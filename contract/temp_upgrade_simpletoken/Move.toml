@@ -1,10 +1,10 @@
 [package]
-name = "SimpleTokenObj"
+name = "SimpleTokenObj2"
 version = "1.0.0"
 authors = []
 
 [addresses]
-rwa_addr = "_"
+rwa_addr = "0xcd68ac951e1b46bfd2452723998fbdf47f88843925b555547372e64862f6e0d7"
 
 [dependencies]
 AptosFramework = { git = "https://github.com/aptos-labs/aptos-framework.git", rev = "testnet", subdir = "aptos-framework" }
