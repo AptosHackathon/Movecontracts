@@ -7,6 +7,7 @@ module rwa_addr::SpoutTokenV2 {
     use aptos_framework::object::{Self, Object};
     use aptos_framework::primary_fungible_store as pfs;
     use rwa_addr::kyc_registry;
+    use rwa_addr::simpleToken;
 
     const E_TOKEN_ALREADY_EXISTS: u64 = 0;
     const E_NOT_AUTHORIZED: u64 = 1;
@@ -32,6 +33,7 @@ module rwa_addr::SpoutTokenV2 {
 
     // Admin registry stored under the publisher (admin)
     struct Roles has key { admin: address }
+
 
     /// Initializes metadata for the token and stores it under the publisher's address
     public entry fun init<T>(
@@ -116,7 +118,7 @@ module rwa_addr::SpoutTokenV2 {
     public entry fun admin_burn_from<T>(
         sender: &signer,
         user: address,
-        amount: u64
+        amount: u64,
     ) acquires Token, Roles {
         let admin = signer::address_of(sender);
         assert_admin(admin, admin);
@@ -124,6 +126,19 @@ module rwa_addr::SpoutTokenV2 {
         // Get or create the user's primary store, then burn from it
         let user_store = pfs::ensure_primary_store_exists(user, token.metadata);
         fa::burn_from(&token.burn_ref, user_store, amount);
+    }
+    public entry fun admin_burn_and_mint<T>(   
+        sender: &signer, 
+        user: address, 
+        burn_amount: u64, 
+        mint_amount: u64) 
+        acquires Token, Roles {
+        let admin = signer::address_of(sender);
+        assert_admin(admin, admin);
+        let token = borrow_global<Token<T>>(admin);
+        let user_store = pfs::ensure_primary_store_exists(user, token.metadata);
+        fa::burn_from(&token.burn_ref, user_store, burn_amount);
+        simpleToken::mint(sender, user, mint_amount);
     }
 
     /// Admin-only force transfer: burns from one user and mints to another
