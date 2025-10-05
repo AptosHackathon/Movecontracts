@@ -24,7 +24,7 @@ module rwa_addr::simpleToken {
         let sender_addr = signer::address_of(sender);
         assert!(!exists<Token>(sender_addr), error::already_exists(E_TOKEN_ALREADY_EXISTS));
 
-        // Create the metadata object
+        // Create the metadata object using symbol as the seed
         let constructor_ref = object::create_named_object(sender, symbol);
         
         // Initialize the fungible asset
@@ -43,6 +43,35 @@ module rwa_addr::simpleToken {
         let metadata = object::object_from_constructor_ref<fa::Metadata>(&constructor_ref);
 
         // Store the token
+        move_to(sender, Token { metadata, mint_ref });
+    }
+
+    /// Initialize a token with a custom seed (allows reusing the same symbol)
+    public entry fun init_with_seed(
+        sender: &signer,
+        seed: vector<u8>,
+        symbol: vector<u8>,
+        name: vector<u8>,
+        decimals: u8
+    ) {
+        let sender_addr = signer::address_of(sender);
+        assert!(!exists<Token>(sender_addr), error::already_exists(E_TOKEN_ALREADY_EXISTS));
+
+        // Create metadata object with a custom seed to avoid collisions
+        let constructor_ref = object::create_named_object(sender, seed);
+
+        pfs::create_primary_store_enabled_fungible_asset(
+            &constructor_ref,
+            option::none<u128>(), // unlimited supply
+            utf8(name),
+            utf8(symbol),
+            decimals,
+            utf8(b""),
+            utf8(b""),
+        );
+
+        let mint_ref = fa::generate_mint_ref(&constructor_ref);
+        let metadata = object::object_from_constructor_ref<fa::Metadata>(&constructor_ref);
         move_to(sender, Token { metadata, mint_ref });
     }
 
@@ -95,7 +124,7 @@ module rwa_addr::simpleToken {
 #[view]
 public fun metadata_address(): address acquires Token {
     let token = borrow_global<Token>(@rwa_addr);
-    object::address_from_object(token.metadata)
+    object::object_address(&token.metadata)
 }
 
     /// Get total supply
