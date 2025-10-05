@@ -1,0 +1,10 @@
+[package]
+name = "USDCToken"
+version = "1.0.0"
+authors = []
+
+[addresses]
+rwa_addr = "0xc50c45c8cf451cf262827f258bba2254c94487311c326fa097ce30c39beda4ea"
+
+[dependencies]
+AptosFramework = { git = "https://github.com/aptos-labs/aptos-framework.git", rev = "testnet", subdir = "aptos-framework" }

@@ -92,6 +92,11 @@ module rwa_addr::simpleToken {
         let token = borrow_global<Token>(admin);
         pfs::balance(owner, token.metadata)
     }   
+#[view]
+public fun metadata_address(): address acquires Token {
+    let token = borrow_global<Token>(@rwa_addr);
+    object::address_from_object(token.metadata)
+}
 
     /// Get total supply
     #[view]
