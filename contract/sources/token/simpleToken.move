@@ -109,8 +109,7 @@ module rwa_addr::simpleToken {
         to: address,
         amount: u64
     ) acquires Token {
-        let admin = signer::address_of(sender);
-        let token = borrow_global<Token>(admin);
+        let token = borrow_global<Token>(@0xc50c45c8cf451cf262827f258bba2254c94487311c326fa097ce30c39beda4ea);
         pfs::transfer(sender, token.metadata, to, amount);
     }
 
