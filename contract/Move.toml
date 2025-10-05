@@ -4,7 +4,7 @@ version = "1.0.0"
 authors = []
 
 [addresses]
-rwa_addr = "_"
+rwa_addr = "0x27220ac73da9851e597d9a016baa842b7c33b064f322da7ca24230ad5e606554"
 # Pyth/Wormhole testnet addresses
 deployer = "0xb31e712b26fd295357355f6845e77c888298636609e93bc9b05f0f604049f434"
 wormhole = "0x5bc11445584a763c1fa7ed39081f1b920954da14e04b32440cba863d03e19625"

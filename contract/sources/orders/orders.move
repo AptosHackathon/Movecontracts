@@ -12,6 +12,7 @@ module rwa_addr::orders {
     // Publisher address where KYC/Oracle are initialized (hardcoded for now)
     const ADMIN_ADDR: address = @0xc50c45c8cf451cf262827f258bba2254c94487311c326fa097ce30c39beda4ea;
 
+    const DECIMALS: u128 = 1_000_000; // 6 decimals
     /// Helper function to get price based on ticker
     /// NOTE: For testnet, Pyth is disabled (using our own custom multi-asset oracle)
     fun get_oracle_price(ticker: vector<u8>): (u128, u64) {
@@ -80,8 +81,7 @@ module rwa_addr::orders {
         // Get price from appropriate oracle based on ticker
         let (price, oracle_ts) = get_oracle_price(ticker);
     
-        let asset_amount = (usdc_amount * 1000000000000u128) / price; 
-        
+        let asset_amount = (usdc_amount * DECIMALS) / price;        
         // Emit modern event (for transaction-based querying)
         event::emit(BuyOrderCreated { user, ticker, usdc_amount, asset_amount, price, oracle_ts });
         
